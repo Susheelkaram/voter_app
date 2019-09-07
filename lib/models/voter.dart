@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:voter_app/utils/Constants.dart';
 
 class Voter {
   String _name;
@@ -16,7 +17,7 @@ class Voter {
 
   Voter.fromMap(Map<String, dynamic> map, {this.reference})
       : _name = map['name'],
-        _phone = map['mobile'],
+        _phone = map['phone'],
         _age = map['age'],
         _address = map['address'],
         _pollingBoothNo = map['polling_booth_no'],
@@ -35,9 +36,9 @@ class Voter {
     _name = value;
   }
 
-  String get mobile => _phone;
+  String get phone => _phone;
 
-  set mobile(String valueint) {
+  set phone(String valueint) {
     _phone = valueint;
   }
 

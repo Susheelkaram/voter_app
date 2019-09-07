@@ -18,6 +18,7 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     _selectedLoginType = _loginTypes[0];
+    super.initState();
   }
 
   @override
@@ -30,12 +31,13 @@ class LoginScreenState extends State<LoginScreen> {
           key: _formKey,
           child: Padding(
             padding: EdgeInsets.all(_minPadding),
-            child: ListView(
+            child: Column(
               children: <Widget>[
                 Padding(
                   padding:
                       EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                   child: DropdownButton(
+                      value: _selectedLoginType,
                       items: _loginTypes.map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -75,15 +77,15 @@ class LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
-                  child: Expanded(
-                      child: RaisedButton(
+                  padding:
+                      EdgeInsets.only(top: _minPadding, bottom: _minPadding),
+                  child: RaisedButton(
+                    color: Theme.of(context).primaryColorDark,
+                          textColor: Colors.white,
                           child: Text('Login'),
-                          onPressed: (){
-                            // Login action
-                          }
-                      )
-                  ),
+                          onPressed: () {
+                            debugPrint('Login Pressed');
+                          }),
                 )
               ],
             ),
