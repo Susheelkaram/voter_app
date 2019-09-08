@@ -14,6 +14,9 @@ class Voter {
   String _constituency;
   String _creatorId;
   DocumentReference reference;
+  String docId;
+
+  Voter() {}
 
   Voter.fromMap(Map<String, dynamic> map, {this.reference})
       : _name = map['name'],
@@ -29,6 +32,24 @@ class Voter {
 
   Voter.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);
+
+  // To JSON
+  Map<String, dynamic> toJson() => _itemToJson(this);
+
+  Map<String, dynamic> _itemToJson(Voter instance) {
+    return <String, dynamic>{
+      'name': _name,
+      'phone': _phone,
+      'age': _age,
+      'address': _address,
+      'polling_booth_no': _pollingBoothNo,
+      'village': _village,
+      'mandal': _mandal,
+      'district': _district,
+      'constituency': _constituency,
+      'creator_id': _creatorId
+    };
+  }
 
   String get name => _name;
 

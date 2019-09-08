@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:voter_app/screens/admin_signup.dart';
+import 'package:voter_app/screens/voter_list.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,9 +11,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginScreenState extends State<LoginScreen> {
-  var _loginTypes = ['Admin', 'Representative'];
+  final COUNTRY_CODE = '+91';
+  final EMAIL_DOMAIN = '@susheel.com';
+  var _loginTypes = ['Representative', 'Admin'];
   var _selectedLoginType = '';
   var _minPadding = 10.0;
+  var _isAdmin = false;
   var _formKey = GlobalKey<FormState>();
   TextEditingController _phoneInputController = TextEditingController();
   TextEditingController _passwordInputController = TextEditingController();
@@ -31,7 +37,7 @@ class LoginScreenState extends State<LoginScreen> {
           key: _formKey,
           child: Padding(
             padding: EdgeInsets.all(_minPadding),
-            child: Column(
+            child: ListView(
               children: <Widget>[
                 Padding(
                   padding:
@@ -47,6 +53,11 @@ class LoginScreenState extends State<LoginScreen> {
                       onChanged: (String newValue) {
                         setState(() {
                           _selectedLoginType = newValue;
+                          if (newValue == 'Admin') {
+                            _isAdmin = true;
+                          } else {
+                            _isAdmin = false;
+                          }
                         });
                       }),
                 ),
@@ -67,8 +78,9 @@ class LoginScreenState extends State<LoginScreen> {
                   padding:
                       EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                   child: TextFormField(
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.text,
                     controller: _passwordInputController,
+                    obscureText: true,
                     decoration: InputDecoration(
                         labelText: 'Password',
                         hintText: 'Enter Password',
@@ -80,16 +92,56 @@ class LoginScreenState extends State<LoginScreen> {
                   padding:
                       EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                   child: RaisedButton(
-                    color: Theme.of(context).primaryColorDark,
-                          textColor: Colors.white,
-                          child: Text('Login'),
-                          onPressed: () {
-                            debugPrint('Login Pressed');
-                          }),
-                )
+                      color: Theme.of(context).primaryColorDark,
+                      textColor: Colors.white,
+                      child: Text('Login'),
+                      onPressed: () {
+                        _signIn();
+                      }),
+                ),
+                if (_isAdmin)
+                  Padding(
+                    padding:
+                        EdgeInsets.only(top: _minPadding, bottom: _minPadding),
+                    child: MaterialButton(
+                        color: Theme.of(context).primaryColorDark,
+                        textColor: Colors.white,
+                        child: Text('Create Account'),
+                        onPressed: () {
+                          _openSignupForm(context);
+                        }),
+                  )
               ],
             ),
           ),
         ));
   }
+
+  void _signIn() {
+    String phone = _phoneInputController.text;
+    String password = _passwordInputController.text;
+    String email = COUNTRY_CODE + phone + EMAIL_DOMAIN;
+
+    FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: password)
+        .then((AuthResult result) {
+      if (result.user != null) {
+        _gotoHome(context);
+      }
+    });
+  }
+}
+
+void _openSignupForm(BuildContext context) {
+  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+    return AdminSignup();
+  }));
+}
+
+void _gotoHome(BuildContext context) {
+//  Navigator.pop(context);
+//  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+//    return VoterList();
+//  }));
+  Navigator.pushReplacementNamed(context, '/home');
 }

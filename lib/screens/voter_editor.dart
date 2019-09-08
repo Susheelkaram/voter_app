@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:voter_app/models/voter.dart';
+import 'package:voter_app/utils/firestore_service.dart';
 
 class VoterEditor extends StatefulWidget {
   @override
@@ -10,8 +13,26 @@ class VoterEditor extends StatefulWidget {
 class VoterEditorState extends State<VoterEditor> {
   var _minPadding = 8.0;
   var _formKey = GlobalKey<FormState>();
+  var _uid = '';
+  FirestoreService firestoreService = FirestoreService('voters');
 
   TextEditingController _nameController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+  TextEditingController _ageController = TextEditingController();
+  TextEditingController _boothNoController = TextEditingController();
+  TextEditingController _constituencyController = TextEditingController();
+  TextEditingController _addressController = TextEditingController();
+  TextEditingController _villageController = TextEditingController();
+  TextEditingController _mandalController = TextEditingController();
+  TextEditingController _districtController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.currentUser().then((FirebaseUser user){
+      _uid = user.uid;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +57,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _phoneController,
                   keyboardType: TextInputType.number,
                   decoration: _getInputDecoration('Phone *', 'Phone no. *'),
                 ),
@@ -45,7 +66,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _ageController,
                   keyboardType: TextInputType.number,
                   decoration: _getInputDecoration('Age *', 'in yrs *'),
                 ),
@@ -54,7 +75,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _boothNoController,
                   keyboardType: TextInputType.number,
                   decoration: _getInputDecoration('Booth no. *', 'Polling booth number *'),
                 ),
@@ -62,7 +83,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _constituencyController,
                   keyboardType: TextInputType.text,
                   decoration: _getInputDecoration('Constituency *', 'Assembly constituency *'),
                 ),
@@ -70,7 +91,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _addressController,
                   keyboardType: TextInputType.text,
                   decoration: _getInputDecoration('Address', 'H.no & Locality'),
                 ),
@@ -78,7 +99,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _villageController,
                   keyboardType: TextInputType.text,
                   decoration: _getInputDecoration('Village/ Town', 'Village/Town'),
                 ),
@@ -87,7 +108,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _mandalController,
                   keyboardType: TextInputType.text,
                   decoration: _getInputDecoration('Mandal', 'Mandal'),
                 ),
@@ -95,7 +116,7 @@ class VoterEditorState extends State<VoterEditor> {
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
-                  controller: _nameController,
+                  controller: _districtController,
                   keyboardType: TextInputType.text,
                   decoration: _getInputDecoration('District', 'District'),
                 ),
@@ -109,12 +130,35 @@ class VoterEditorState extends State<VoterEditor> {
                   child: Text('Add Voter'),
                     onPressed: (){
                       // Add voter logic
+                      _addVoter();
                     }
                 ),
               ),
             ],
           ),
         ));
+  }
+
+  Voter _getVoter(){
+    Voter voter = Voter();
+    voter.name = _nameController.text;
+    voter.phone = _phoneController.text;
+    voter.age = int.parse(_ageController.text);
+    voter.pollingBoothNo = int.parse(_boothNoController.text);
+    voter.constituency = _constituencyController.text;
+    voter.address = _addressController.text;
+    voter.village = _villageController.text;
+    voter.mandal = _mandalController.text;
+    voter.district = _districtController.text;
+    voter.creatorId = _uid;
+
+    return voter;
+  }
+  void _addVoter(){
+    Voter voter = _getVoter();
+    firestoreService.addDocument(voter.toJson()).then((val) {
+      Navigator.pop(context);
+    });
   }
 }
 
@@ -127,3 +171,8 @@ InputDecoration _getInputDecoration(String labelText, String hintText) {
       )
   );
 }
+
+
+
+
+
