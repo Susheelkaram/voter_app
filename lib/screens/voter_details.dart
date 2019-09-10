@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:voter_app/models/representative.dart';
 import 'package:voter_app/models/voter.dart';
+import 'package:voter_app/screens/voter_editor.dart';
 import 'package:voter_app/utils/firestore_service.dart';
 
 Voter _voter;
 FirestoreService firestoreService;
+bool _isAdmin;
+Representative _representative;
 
 class VoterDetails extends StatefulWidget {
-  VoterDetails(Voter voter) {
+
+  VoterDetails(Voter voter, bool isAdmin, {Representative representative}) {
     _voter = voter;
+    _isAdmin = isAdmin;
+    _representative = representative;
   }
 
   @override
@@ -79,12 +86,19 @@ class VoterDetailsState extends State<VoterDetails> {
               padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
               child: Text('Mandal: ${_voter.mandal}', style: textStyle),
             ),
+
             Padding(
+              padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
+              child: Text('Created by: ${_voter.createdBy}', style: textStyle),
+            ),
+
+            // Delete/ Edit Voters option only for Representatives
+            if (!_isAdmin) Padding(
               padding:
                   EdgeInsets.only(top: _minPadding * 5, bottom: _minPadding),
               child: Padding(
                   padding: EdgeInsets.all(_minPadding),
-                  child: Row(
+                  child:  Row(
                     children: <Widget>[
                       Expanded(
                           child: MaterialButton(
@@ -104,6 +118,7 @@ class VoterDetailsState extends State<VoterDetails> {
                               textColor: Colors.white,
                               onPressed: () {
                                 // Edit action
+                                _launchEditVoter(context, _voter);
                               })),
                     ],
                   )),
@@ -119,4 +134,13 @@ class VoterDetailsState extends State<VoterDetails> {
     firestoreService.removeDocument(docId);
     Navigator.pop(context);
   }
+  void _launchEditVoter(BuildContext context, Voter voter){
+    Navigator.push(context, MaterialPageRoute(
+        builder: (context) {
+          return VoterEditor('edit', _representative, voter: _voter);
+        }
+    ));
+  }
+
 }
+

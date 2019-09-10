@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:voter_app/screens/voter_list.dart';
+import 'package:voter_app/screens/home.dart';
 
 class AdminSignup extends StatefulWidget {
   @override
@@ -206,7 +206,7 @@ InputDecoration _getInputDecoration(String labelText, String hintText) {
 }
 
 void _gotoHome(BuildContext context) {
-  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
-    return VoterList();
+  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
+    return VoterList(true);
   }));
 }

@@ -2,25 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Representative {
-  String _uid;
+
   String _name;
   String _phone;
-  String _email;
+  String _password;
+  String _creatorId;
+  String docId;
   DocumentReference reference;
 
+  Representative(){
+  }
+
   Representative.fromMap(Map<String, dynamic> map, {this.reference})
-      : _uid = map['uid'],
-        _phone = map['phone'],
+      : _phone = map['phone'],
         _name = map['name'],
-        _email = map['email'];
+        _password = map['password'],
+        _creatorId = map['creator_id'];
 
   Representative.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);
 
-  String get uid => _uid;
+  // To JSON
+  Map<String, dynamic> toJson() => _itemToJson(this);
 
-  set uid(String value) {
-    _uid = value;
+  Map<String, dynamic> _itemToJson(Representative instance) {
+    return <String, dynamic>{
+      'name': _name,
+      'phone': _phone,
+      'password' : _password,
+      'creator_id' : _creatorId,
+    };
   }
 
   String get name => _name;
@@ -29,10 +40,10 @@ class Representative {
     _name = value;
   }
 
-  String get email => _email;
+  String get password => _password;
 
-  set email(String value) {
-    _email = value;
+  set password(String value) {
+    _password = value;
   }
 
   String get phone => _phone;
@@ -40,4 +51,11 @@ class Representative {
   set phone(String value) {
     _phone = value;
   }
+
+  String get creatorId => _creatorId;
+
+  set creatorId(String value) {
+    _creatorId = value;
+  }
+
 }

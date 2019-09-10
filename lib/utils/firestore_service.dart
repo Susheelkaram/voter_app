@@ -19,9 +19,9 @@ class FirestoreService {
 //    return ref.snapshots();
 //  }
 //
-//  Future<DocumentSnapshot> getDocumentById(String id) {
-//    return ref.document(id).get();
-//  }
+  Stream<QuerySnapshot> getRepresentativeByPhone(String phone) {
+    return ref.where('phone', isEqualTo: phone).snapshots();
+  }
 
   void removeDocument(String id) {
     ref.document(id).delete().then((value) {
@@ -33,7 +33,7 @@ class FirestoreService {
 
   Future<DocumentReference> addDocument(Map data) {
     ref.add(data).then((ref) {
-      debugPrint("Deleted succesfully");
+      debugPrint("Document added successfully");
       return ref;
     }).catchError((error) {
       debugPrint(error.toString());
@@ -42,7 +42,7 @@ class FirestoreService {
 
   void updateDocument(Map data, String id) {
     ref.document(id).updateData(data).then((value) {
-      debugPrint("Deleted succesfully");
+      debugPrint("Updated succesfully");
     }).catchError((error) {
       debugPrint(error.toString());
     });

@@ -13,6 +13,8 @@ class Voter {
   String _district;
   String _constituency;
   String _creatorId;
+  String _createdBy;
+  String _adminId;
   DocumentReference reference;
   String docId;
 
@@ -28,7 +30,9 @@ class Voter {
         _mandal = map['mandal'],
         _district = map['district'],
         _constituency = map['constituency'],
-        _creatorId = map['creator_id'];
+        _creatorId = map['creator_id'],
+        _createdBy = map['created_by'],
+        _adminId = map['admin_id'];
 
   Voter.fromSnapshot(DocumentSnapshot snapshot)
       : this.fromMap(snapshot.data, reference: snapshot.reference);
@@ -47,7 +51,9 @@ class Voter {
       'mandal': _mandal,
       'district': _district,
       'constituency': _constituency,
-      'creator_id': _creatorId
+      'creator_id': _creatorId,
+      'created_by': _createdBy,
+      'admin_id': _adminId
     };
   }
 
@@ -110,4 +116,18 @@ class Voter {
   set creatorId(String value) {
     _creatorId = value;
   }
+
+  String get adminId => _adminId;
+
+  set adminId(String value) {
+    _adminId = value;
+  }
+
+  String get createdBy => _createdBy;
+
+  set createdBy(String value) {
+    _createdBy = value;
+  }
+
+
 }
