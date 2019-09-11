@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:voter_app/utils/utils.dart';
 
 class FirestoreService {
   final Firestore _db = Firestore.instance;
@@ -19,6 +20,18 @@ class FirestoreService {
 //    return ref.snapshots();
 //  }
 //
+  Stream<QuerySnapshot> getCollectionWhere(String key, String value) {
+    return ref.where(key, isEqualTo: value).snapshots();
+  }
+
+  Stream<QuerySnapshot> getAll() {
+    return ref.snapshots();
+  }
+
+  Stream<DocumentSnapshot> getDocById(String id) {
+    return ref.document(id).snapshots();
+  }
+
   Stream<QuerySnapshot> getRepresentativeByPhone(String phone) {
     return ref.where('phone', isEqualTo: phone).snapshots();
   }

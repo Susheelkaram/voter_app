@@ -42,6 +42,7 @@ class VoterListState extends State<VoterList> {
   void initState() {
     super.initState();
     _listDropdownValue = _lists[0];
+    _showVoters = true;
     _representativeListHelper = RepresentativeListHelper(_uid);
     _voterListHelper = VoterListHelper(_isAdminMode);
 
@@ -52,8 +53,9 @@ class VoterListState extends State<VoterList> {
           if (user != null) {
             _uid = user.uid;
             _showFab = false;
-            displayName = user.displayName + user.email;
-            debugPrint("Logged in: $displayName - $_uid");
+            displayName =
+                'Admin: Logged in as ${user.displayName} (${user.phoneNumber})';
+            debugPrint("Logged in as $displayName (Admin)");
             _representativeListHelper.uid = _uid;
             _voterListHelper.uid = _uid;
           }
@@ -65,7 +67,9 @@ class VoterListState extends State<VoterList> {
     // Representative Mode
     _getCurrentRepresentative().then((val) {
       setState(() {
-        displayName = currentRep.name;
+        _showFab = true;
+        displayName =
+            'Representative: Logged in as ${currentRep.name} (${currentRep.phone})';
         _voterListHelper.currentRep = currentRep;
       });
     });
@@ -86,7 +90,7 @@ class VoterListState extends State<VoterList> {
                   _openVoterEditor(context);
                 })),
         appBar: AppBar(
-          title: Text('My Voters ($displayName)'),
+          title: Text('My Voters'),
           actions: <Widget>[
             IconButton(
                 icon: Icon(Icons.power_settings_new),
@@ -97,6 +101,18 @@ class VoterListState extends State<VoterList> {
         ),
         body: Column(
           children: <Widget>[
+            Padding(
+                padding: EdgeInsets.only(top: 5.0, left: 15.0, right: 15.0),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(displayName,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    )
+                  ],
+                )),
             if (_isAdminMode)
               Padding(
                 padding: EdgeInsets.only(left: 15.0, right: 15.0),
@@ -145,17 +161,17 @@ class VoterListState extends State<VoterList> {
   }
 }
 
-Stream<QuerySnapshot> _getStream() {
-  if (_isAdminMode) {
-    return Firestore.instance.collection('voters').snapshots();
-  }
-  if (currentRep != null) {
-    return Firestore.instance
-        .collection('voters')
-        .where('creator_id', isEqualTo: currentRep.phone)
-        .snapshots();
-  }
-}
+//Stream<QuerySnapshot> _getStream() {
+//  if (_isAdminMode) {
+//    return Firestore.instance.collection('voters').snapshots();
+//  }
+//  else if (!_isAdminMode && currentRep != null) {
+//    return Firestore.instance
+//        .collection('voters')
+//        .where('creator_id', isEqualTo: currentRep.phone)
+//        .snapshots();
+//  }
+//}
 
 void _openVoterDetails(BuildContext context, Voter voter) {
   Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {

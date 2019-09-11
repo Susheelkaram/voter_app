@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:voter_app/models/representative.dart';
 import 'package:voter_app/models/voter.dart';
 import 'package:voter_app/utils/firestore_service.dart';
+import 'package:voter_app/utils/utils.dart';
 
 Voter voterDetails;
 bool _isEditMode = false;
@@ -41,7 +42,7 @@ class VoterEditor extends StatefulWidget {
 class VoterEditorState extends State<VoterEditor> {
   var _minPadding = 8.0;
 
-//  var _formKey = GlobalKey<FormState>();
+  var _voterFormKey = GlobalKey<FormState>();
   FirestoreService firestoreService = FirestoreService('voters');
 
   @override
@@ -62,7 +63,6 @@ class VoterEditorState extends State<VoterEditor> {
     } else {
       _resetForm();
     }
-
   }
 
   @override
@@ -72,7 +72,7 @@ class VoterEditorState extends State<VoterEditor> {
           title: Text('Add/Edit Voter'),
         ),
         body: Form(
-//          key: _formKey,
+          key: _voterFormKey,
           child: ListView(
             padding: EdgeInsets.all(15.0),
             children: <Widget>[
@@ -82,6 +82,12 @@ class VoterEditorState extends State<VoterEditor> {
                   controller: _nameController,
                   keyboardType: TextInputType.text,
                   decoration: _getInputDecoration('Name *', 'Full Name *'),
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Enter valid name';
+                    }
+                    return null;
+                  },
                 ),
               ),
               Padding(
@@ -89,7 +95,14 @@ class VoterEditorState extends State<VoterEditor> {
                 child: TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.number,
+                  maxLength: 10,
                   decoration: _getInputDecoration('Phone *', 'Phone no. *'),
+                  validator: (value) {
+                    if (value.length != 10) {
+                      return 'Enter valid 10-digit phone number';
+                    }
+                    return null;
+                  },
                 ),
               ),
               Padding(
@@ -97,7 +110,21 @@ class VoterEditorState extends State<VoterEditor> {
                 child: TextFormField(
                   controller: _ageController,
                   keyboardType: TextInputType.number,
+                  maxLength: 3,
                   decoration: _getInputDecoration('Age *', 'in yrs *'),
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Enter valid age';
+                    }
+                    int _ageNum = int.parse(value);
+                    if(_ageNum < 18){
+                      return 'Voter should be atleast 18yrs old';
+                    }
+                    if(_ageNum > 120){
+                      return 'Really! that old?';
+                    }
+                    return null;
+                  },
                 ),
               ),
               Padding(
@@ -105,17 +132,32 @@ class VoterEditorState extends State<VoterEditor> {
                 child: TextFormField(
                   controller: _boothNoController,
                   keyboardType: TextInputType.number,
+                  maxLength: 3,
                   decoration: _getInputDecoration(
                       'Booth no. *', 'Polling booth number *'),
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Enter valid Booth no.';
+                    }
+                    return null;
+                  },
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                 child: TextFormField(
                   controller: _constituencyController,
+                  maxLength: 20,
                   keyboardType: TextInputType.text,
                   decoration: _getInputDecoration(
                       'Constituency *', 'Assembly constituency *'),
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Enter valid Constituency';
+                    }
+                    return null;
+                  },
+
                 ),
               ),
               Padding(
@@ -123,6 +165,7 @@ class VoterEditorState extends State<VoterEditor> {
                 child: TextFormField(
                   controller: _addressController,
                   keyboardType: TextInputType.text,
+                  maxLength: 20,
                   decoration: _getInputDecoration('Address', 'H.no & Locality'),
                 ),
               ),
@@ -131,6 +174,7 @@ class VoterEditorState extends State<VoterEditor> {
                 child: TextFormField(
                   controller: _villageController,
                   keyboardType: TextInputType.text,
+                  maxLength: 20,
                   decoration:
                       _getInputDecoration('Village/ Town', 'Village/Town'),
                 ),
@@ -140,6 +184,7 @@ class VoterEditorState extends State<VoterEditor> {
                 child: TextFormField(
                   controller: _mandalController,
                   keyboardType: TextInputType.text,
+                  maxLength: 20,
                   decoration: _getInputDecoration('Mandal', 'Mandal'),
                 ),
               ),
@@ -148,6 +193,7 @@ class VoterEditorState extends State<VoterEditor> {
                 child: TextFormField(
                   controller: _districtController,
                   keyboardType: TextInputType.text,
+                  maxLength: 20,
                   decoration: _getInputDecoration('District', 'District'),
                 ),
               ),
@@ -161,7 +207,11 @@ class VoterEditorState extends State<VoterEditor> {
                         child: Text('Save Voter'),
                         onPressed: () {
                           // Add voter logic
-                          _saveVoter();
+                          if(_voterFormKey.currentState.validate()){
+                            _saveVoter();
+                            return;
+                          }
+                          Utils.displayToast('Check errors in the form');
                         }),
                   )),
             ],
@@ -171,8 +221,8 @@ class VoterEditorState extends State<VoterEditor> {
 
   Voter _getVoter() {
     _creatorId = _representative.phone;
-   _adminId = _representative.creatorId;
-   var createdBy = _representative.name + '(' + _representative.phone + ')';
+    _adminId = _representative.creatorId;
+    var createdBy = _representative.name + '(' + _representative.phone + ')';
 
     Voter voter = Voter();
     voter.name = _nameController.text;

@@ -1,14 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:voter_app/models/representative.dart';
 import 'package:voter_app/screens/home.dart';
 import 'package:voter_app/utils/firestore_service.dart';
+import 'package:voter_app/utils/utils.dart';
 
 FirestoreService firestoreService;
 String _creatorUid;
 
 class AddRepresentative extends StatefulWidget {
-  AddRepresentative(String UID){
+  AddRepresentative(String UID) {
     _creatorUid = UID;
   }
 
@@ -27,12 +30,11 @@ class AddRepresentativeState extends State<AddRepresentative> {
   var _minPadding = 10.0;
   var _formKey = GlobalKey<FormState>();
 
-
   TextEditingController _phoneInputController = TextEditingController();
   TextEditingController _nameInputController = TextEditingController();
   TextEditingController _passwordInputController = TextEditingController();
   TextEditingController _repeatPasswordInputController =
-  TextEditingController();
+      TextEditingController();
 
   @override
   void initState() {
@@ -54,41 +56,67 @@ class AddRepresentativeState extends State<AddRepresentative> {
                 children: <Widget>[
                   Padding(
                     padding:
-                    EdgeInsets.only(top: _minPadding, bottom: _minPadding),
+                        EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                     child: TextFormField(
                         keyboardType: TextInputType.number,
                         maxLength: 10,
                         controller: _phoneInputController,
+                        validator: (value) {
+                          if (value.length != 10) {
+                            return 'Enter valid phone number';
+                          }
+                          return null;
+                        },
                         decoration: _getInputDecoration(
                             'Phone', '10 digit phone number')),
                   ),
                   Padding(
                     padding:
-                    EdgeInsets.only(top: _minPadding, bottom: _minPadding),
+                        EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                     child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        controller: _nameInputController,
-                        decoration: _getInputDecoration('Name', 'Full name')),
+                      keyboardType: TextInputType.text,
+                      controller: _nameInputController,
+                      decoration: _getInputDecoration('Name', 'Full name'),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Enter valid name';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
                   Padding(
                     padding:
-                    EdgeInsets.only(top: _minPadding, bottom: _minPadding),
+                        EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                     child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        obscureText: true,
-                        controller: _passwordInputController,
-                        decoration:
-                        _getInputDecoration('Password', 'Password')),
+                      keyboardType: TextInputType.text,
+                      obscureText: true,
+                      controller: _passwordInputController,
+                      decoration: _getInputDecoration('Password', 'Password'),
+                      validator: (value) {
+                        if (value.isEmpty || value.length < 4) {
+                          return 'Enter valid password (atleast 4 characters)';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
                   Padding(
                     padding:
-                    EdgeInsets.only(top: _minPadding, bottom: _minPadding),
+                        EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                     child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        obscureText: true,
-                        controller: _repeatPasswordInputController,
-                        decoration: _getInputDecoration(
-                            'Re-enter Password', 'Re-enter Password')),
+                      keyboardType: TextInputType.text,
+                      obscureText: true,
+                      controller: _repeatPasswordInputController,
+                      decoration: _getInputDecoration(
+                          'Re-enter Password', 'Re-enter Password'),
+                      validator: (value) {
+                        if (value.isEmpty || value != _passwordInputController.text) {
+                          return 'Passwords should match';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
                   Padding(
                       padding: EdgeInsets.only(
@@ -99,16 +127,17 @@ class AddRepresentativeState extends State<AddRepresentative> {
                           child: Text('Add Representative'),
                           onPressed: () {
                             // Representative Create account action
-                            _saveRepresentative();
+                            if (_formKey.currentState.validate()) {
+                              _saveRepresentative();
+                            }
                           })),
-
                 ],
               ),
             )));
   }
 
-  Representative _getRepresentative(){
-    Representative representative =  Representative();
+  Representative _getRepresentative() {
+    Representative representative = Representative();
     representative.name = _nameInputController.text;
     representative.phone = _phoneInputController.text;
     representative.password = _passwordInputController.text;
@@ -117,11 +146,21 @@ class AddRepresentativeState extends State<AddRepresentative> {
     return representative;
   }
 
-  void _saveRepresentative() {
+  void _saveRepresentative() async {
     Representative representative = _getRepresentative();
-    firestoreService.addDocument(representative.toJson());
-    Navigator.pop(context);
+    QuerySnapshot reps = await firestoreService
+        .getRepresentativeByPhone(representative.phone)
+        .first;
 
+    if (reps.documents.length == 0) {
+      firestoreService.addDocument(representative.toJson());
+      Utils.displayToast('Representative created successfully');
+      Navigator.pop(context);
+      return;
+    }
+
+    // Representative with same phone exists
+    Utils.displayToast('Representative already exists');
   }
 }
 
@@ -133,4 +172,3 @@ InputDecoration _getInputDecoration(String labelText, String hintText) {
         borderRadius: BorderRadius.circular(2.0),
       ));
 }
-

@@ -10,7 +10,6 @@ bool _isAdmin;
 Representative _representative;
 
 class VoterDetails extends StatefulWidget {
-
   VoterDetails(Voter voter, bool isAdmin, {Representative representative}) {
     _voter = voter;
     _isAdmin = isAdmin;
@@ -29,6 +28,16 @@ class VoterDetailsState extends State<VoterDetails> {
   @override
   void initState() {
     firestoreService = FirestoreService('voters');
+    firestoreService.getDocById(_voter.docId).listen(
+        (snapshot){
+          setState(() {
+            String docId = _voter.docId;
+            _voter = Voter.fromSnapshot(snapshot);
+            _voter.docId = docId;
+          });
+        }
+    );
+
     super.initState();
   }
 
@@ -93,36 +102,37 @@ class VoterDetailsState extends State<VoterDetails> {
             ),
 
             // Delete/ Edit Voters option only for Representatives
-            if (!_isAdmin) Padding(
-              padding:
-                  EdgeInsets.only(top: _minPadding * 5, bottom: _minPadding),
-              child: Padding(
-                  padding: EdgeInsets.all(_minPadding),
-                  child:  Row(
-                    children: <Widget>[
-                      Expanded(
-                          child: MaterialButton(
-                              child: Text('Delete'),
-                              color: Colors.red,
-                              textColor: Colors.white,
-                              onPressed: () {
-                                _deleteVoter();
-                              })),
-                      Container(
-                        width: _minPadding,
-                      ),
-                      Expanded(
-                          child: MaterialButton(
-                              child: Text('Edit'),
-                              color: Theme.of(context).primaryColorDark,
-                              textColor: Colors.white,
-                              onPressed: () {
-                                // Edit action
-                                _launchEditVoter(context, _voter);
-                              })),
-                    ],
-                  )),
-            )
+            if (!_isAdmin)
+              Padding(
+                padding:
+                    EdgeInsets.only(top: _minPadding * 5, bottom: _minPadding),
+                child: Padding(
+                    padding: EdgeInsets.all(_minPadding),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                            child: MaterialButton(
+                                child: Text('Delete'),
+                                color: Colors.red,
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  _deleteVoter();
+                                })),
+                        Container(
+                          width: _minPadding,
+                        ),
+                        Expanded(
+                            child: MaterialButton(
+                                child: Text('Edit'),
+                                color: Theme.of(context).primaryColorDark,
+                                textColor: Colors.white,
+                                onPressed: () {
+                                  // Edit action
+                                  _launchEditVoter(context, _voter);
+                                })),
+                      ],
+                    )),
+              )
           ],
         ),
       ),
@@ -134,13 +144,10 @@ class VoterDetailsState extends State<VoterDetails> {
     firestoreService.removeDocument(docId);
     Navigator.pop(context);
   }
-  void _launchEditVoter(BuildContext context, Voter voter){
-    Navigator.push(context, MaterialPageRoute(
-        builder: (context) {
-          return VoterEditor('edit', _representative, voter: _voter);
-        }
-    ));
+
+  void _launchEditVoter(BuildContext context, Voter voter) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return VoterEditor('edit', _representative, voter: _voter);
+    }));
   }
-
 }
-

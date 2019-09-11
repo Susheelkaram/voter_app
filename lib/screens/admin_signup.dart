@@ -41,19 +41,33 @@ class AdminSignupState extends State<AdminSignup> {
                     padding:
                         EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                     child: TextFormField(
-                        keyboardType: TextInputType.number,
-                        maxLength: 10,
-                        controller: _phoneInputController,
-                        decoration: _getInputDecoration(
-                            'Phone', '10 digit phone number')),
+                      keyboardType: TextInputType.number,
+                      maxLength: 10,
+                      controller: _phoneInputController,
+                      decoration:
+                          _getInputDecoration('Phone', '10 digit phone number'),
+                      validator: (value) {
+                        if (value.isEmpty || value.length != 10) {
+                          return 'Enter valid phone number';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
                   Padding(
                     padding:
                         EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                     child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        controller: _nameInputController,
-                        decoration: _getInputDecoration('Name', 'Full name')),
+                      keyboardType: TextInputType.text,
+                      controller: _nameInputController,
+                      decoration: _getInputDecoration('Name', 'Full name'),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Enter valid name';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
                   Padding(
                     padding:
@@ -62,6 +76,12 @@ class AdminSignupState extends State<AdminSignup> {
                         keyboardType: TextInputType.text,
                         obscureText: true,
                         controller: _passwordInputController,
+                        validator: (value) {
+                          if (value.length < 4) {
+                            return 'Enter valid password (atleasr 4 Characters)';
+                          }
+                          return null;
+                        },
                         decoration:
                             _getInputDecoration('Password', 'Password')),
                   ),
@@ -69,11 +89,18 @@ class AdminSignupState extends State<AdminSignup> {
                     padding:
                         EdgeInsets.only(top: _minPadding, bottom: _minPadding),
                     child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        obscureText: true,
-                        controller: _repeatPasswordInputController,
-                        decoration: _getInputDecoration(
-                            'Re-enter Password', 'Re-enter Password')),
+                      keyboardType: TextInputType.text,
+                      obscureText: true,
+                      controller: _repeatPasswordInputController,
+                      decoration: _getInputDecoration(
+                          'Re-enter Password', 'Re-enter Password'),
+                      validator: (value) {
+                        if (value != _passwordInputController.text) {
+                          return 'Passwords should match';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
                   Padding(
                       padding: EdgeInsets.only(
@@ -83,8 +110,10 @@ class AdminSignupState extends State<AdminSignup> {
                           textColor: Colors.white,
                           child: Text('Sign Up'),
                           onPressed: () {
-                            // Sign up action
-                            _verifyPhone();
+                            // Admin Sign up action
+                            if(_formKey.currentState.validate()){
+                              _verifyPhone();
+                            }
                           })),
                   Padding(
                     padding:
@@ -126,7 +155,7 @@ class AdminSignupState extends State<AdminSignup> {
     PhoneVerificationCompleted verifySuccess =
         (AuthCredential phoneAuthCredential) {
       // On OTP Auto verified
-          _signInWithCredential(phoneAuthCredential);
+      _signInWithCredential(phoneAuthCredential);
     };
     PhoneVerificationFailed verifyFailed = (AuthException exception) {
       print('${exception.message}');
@@ -141,13 +170,14 @@ class AdminSignupState extends State<AdminSignup> {
         codeAutoRetrievalTimeout: autoRetrievalTimeout);
   }
 
-  void _signInWithOtp(){
+  void _signInWithOtp() {
     String code = _otpInputController.text;
     FirebaseAuth mAuth = FirebaseAuth.instance;
-    AuthCredential phoneCredential = PhoneAuthProvider.getCredential(
-        verificationId: verId, smsCode: code);
+    AuthCredential phoneCredential =
+        PhoneAuthProvider.getCredential(verificationId: verId, smsCode: code);
     _signInWithCredential(phoneCredential);
   }
+
   // Signing in with Phone credential
   void _signInWithCredential(AuthCredential phoneCredential) {
     mAuth.signInWithCredential(phoneCredential).then((AuthResult result) {
@@ -206,7 +236,8 @@ InputDecoration _getInputDecoration(String labelText, String hintText) {
 }
 
 void _gotoHome(BuildContext context) {
-  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) {
+  Navigator.pushReplacement(context,
+      MaterialPageRoute(builder: (BuildContext context) {
     return VoterList(true);
   }));
 }

@@ -1,21 +1,21 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:voter_app/models/representative.dart';
 import 'package:voter_app/models/voter.dart';
 import 'package:voter_app/screens/voter_details.dart';
+import 'package:voter_app/utils/firestore_service.dart';
+import 'package:voter_app/utils/utils.dart';
 
 class RepresentativeListHelper {
   String uid = '';
+  FirestoreService _firestoreService = FirestoreService('representatives');
 
-  RepresentativeListHelper(String _uid){
+  RepresentativeListHelper(String _uid) {
     uid = _uid;
   }
 
   Widget buildBody(BuildContext context) {
-
     return StreamBuilder<QuerySnapshot>(
       stream: _getStream(),
       builder: (context, snapshot) {
@@ -30,7 +30,8 @@ class RepresentativeListHelper {
       BuildContext context, List<DocumentSnapshot> snapshot) {
     return ListView(
       padding: const EdgeInsets.only(top: 10.0),
-      children: snapshot.map((data) => _buildVoterListItem(context, data)).toList(),
+      children:
+          snapshot.map((data) => _buildVoterListItem(context, data)).toList(),
     );
   }
 
@@ -49,26 +50,23 @@ class RepresentativeListHelper {
             child: ListTile(
               title: Text('${representative.name}'),
               subtitle: Text(representative.phone),
-              onTap: () {
-                // On tapping Representative item
-              },
+              trailing: IconButton(
+                  icon: Icon(Icons.delete_outline),
+                  onPressed: () {
+                    _deleteRepresentative(data.documentID);
+                  }),
             )));
   }
 
   Stream<QuerySnapshot> _getStream() {
-//    if (_isAdmin) {
-      return Firestore.instance.collection('representatives').where('creator_id', isEqualTo: uid).snapshots();
-//    }
-//    if(currentRep != null){
-//      return Firestore.instance
-//          .collection('voters')
-//          .where('creator_id', isEqualTo: currentRep.phone)
-//          .snapshots();
-//    }
+    return Firestore.instance
+        .collection('representatives')
+        .where('creator_id', isEqualTo: uid)
+        .snapshots();
   }
 
-
+  void _deleteRepresentative(String docId) {
+    _firestoreService.removeDocument(docId);
+    Utils.displayToast('Representative deleted successfully');
+  }
 }
-
-
-

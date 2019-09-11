@@ -8,6 +8,7 @@ import 'package:voter_app/screens/admin_signup.dart';
 import 'package:voter_app/screens/home.dart';
 import 'package:voter_app/utils/firestore_service.dart';
 import 'package:voter_app/utils/rep_manager.dart';
+import 'package:voter_app/utils/utils.dart';
 
 var _isAdmin = false;
 RepManager repManager;
@@ -34,6 +35,8 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     _selectedLoginType = _loginTypes[0];
+    _isAdmin = false;
+
     repManager = RepManager();
     repManager.init();
     super.initState();
@@ -87,29 +90,41 @@ class LoginScreenState extends State<LoginScreen> {
                           padding: EdgeInsets.only(
                               top: _minPadding, bottom: _minPadding),
                           child: TextFormField(
-                            keyboardType: TextInputType.number,
-                            controller: _phoneInputController,
-                            maxLength: 10,
-                            decoration: InputDecoration(
-                                labelText: 'Phone',
-                                hintText: '10 digit phone number',
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(2.0))),
-                          ),
+                              keyboardType: TextInputType.number,
+                              controller: _phoneInputController,
+                              maxLength: 10,
+                              decoration: InputDecoration(
+                                  labelText: 'Phone',
+                                  hintText: '10 digit phone number',
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(2.0))),
+                              validator: (value) {
+                                if (value.length != 10) {
+                                  return 'Enter valid Phone number';
+                                }
+                                return null;
+                              }),
                         ),
                         Padding(
                           padding: EdgeInsets.only(
                               top: _minPadding, bottom: _minPadding),
                           child: TextFormField(
-                            keyboardType: TextInputType.text,
-                            controller: _passwordInputController,
-                            obscureText: true,
-                            decoration: InputDecoration(
-                                labelText: 'Password',
-                                hintText: 'Enter Password',
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(2.0))),
-                          ),
+                              keyboardType: TextInputType.text,
+                              controller: _passwordInputController,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  hintText: 'Enter Password',
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(2.0))),
+                              validator: (value) {
+                                if (value.isEmpty || value.length < 4) {
+                                  return 'Enter valid password';
+                                }
+                                return null;
+                              }),
                         ),
                         Padding(
                           padding: EdgeInsets.only(
@@ -120,7 +135,9 @@ class LoginScreenState extends State<LoginScreen> {
                               child: Text('Login'),
                               onPressed: () {
                                 debugPrint('login clicked');
-                                _signIn();
+                                if(_formKey.currentState.validate()){
+                                  _signIn();
+                                }
                               }),
                         ),
                         if (_isAdmin)
@@ -153,6 +170,8 @@ class LoginScreenState extends State<LoginScreen> {
         if (result.user != null) {
           _gotoHome(context);
         }
+      }).catchError((error) {
+        Utils.displayToast(error.toString());
       });
       return;
     }
@@ -161,15 +180,27 @@ class LoginScreenState extends State<LoginScreen> {
     debugPrint('Representative : rep login');
     QuerySnapshot snapshot =
         await repsFirestoreService.getRepresentativeByPhone(phone).first;
+
+    // No user with give Phone Number exists
+    if (snapshot.documents.length == 0) {
+      Utils.displayToast('Incorrect Phone or Password');
+      return;
+    }
+
     DocumentSnapshot docSnapshot = snapshot.documents[0];
     Representative representative = Representative.fromSnapshot(docSnapshot);
 
     debugPrint('Representative : ${representative.phone}');
     debugPrint('Representative pass: ${representative.password} : $password');
 
+    // Password correct
     if (password == representative.password) {
       repManager.login(representative);
       _gotoHome(context);
+    }
+    // Invalid Password
+    else {
+      Utils.displayToast('Incorrect Phone or Password');
     }
   }
 }

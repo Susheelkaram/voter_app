@@ -8,7 +8,7 @@ import 'package:voter_app/models/voter.dart';
 import 'package:voter_app/screens/voter_details.dart';
 
 class VoterListHelper {
-  bool _isAdmin = false;
+  bool _isAdmin = true;
   Representative currentRep;
   String uid;
 
@@ -63,11 +63,15 @@ class VoterListHelper {
   }
 
   Stream<QuerySnapshot> _getStream() {
+
+    // Admin mode
     if (_isAdmin) {
       debugPrint("Fetching voters under Admin ID - $uid");
       return Firestore.instance.collection('voters').where('admin_id', isEqualTo: uid).snapshots();
     }
-    if(currentRep != null){
+
+    // Representative mode
+    if(!_isAdmin && currentRep != null){
       return Firestore.instance
           .collection('voters')
           .where('creator_id', isEqualTo: currentRep.phone)
