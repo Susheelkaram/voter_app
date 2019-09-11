@@ -11,15 +11,6 @@ class FirestoreService {
     ref = _db.collection(path);
   }
 
-//
-//  Future<QuerySnapshot> getDataCollection() {
-//    return ref.getDocuments();
-//  }
-//
-//  Stream<QuerySnapshot> streamDataCollection() {
-//    return ref.snapshots();
-//  }
-//
   Stream<QuerySnapshot> getCollectionWhere(String key, String value) {
     return ref.where(key, isEqualTo: value).snapshots();
   }

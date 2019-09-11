@@ -161,17 +161,6 @@ class VoterListState extends State<VoterList> {
   }
 }
 
-//Stream<QuerySnapshot> _getStream() {
-//  if (_isAdminMode) {
-//    return Firestore.instance.collection('voters').snapshots();
-//  }
-//  else if (!_isAdminMode && currentRep != null) {
-//    return Firestore.instance
-//        .collection('voters')
-//        .where('creator_id', isEqualTo: currentRep.phone)
-//        .snapshots();
-//  }
-//}
 
 void _openVoterDetails(BuildContext context, Voter voter) {
   Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
